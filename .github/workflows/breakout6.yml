@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - research/breakout-6
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 permissions:
@@ -46,7 +49,7 @@ jobs:
           retention-days: 30
 
       - name: Publish reproducible results to branch
-        if: success()
+        if: success() && github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
