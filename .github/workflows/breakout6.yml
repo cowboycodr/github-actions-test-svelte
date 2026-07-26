@@ -43,6 +43,8 @@ jobs:
           name: breakout6-results
           path: |
             breakout6.py
+            breakout6.py.b64
+            parts/**
             results/**
           if-no-files-found: warn
           retention-days: 30
