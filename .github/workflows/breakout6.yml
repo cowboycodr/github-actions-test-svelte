@@ -1,0 +1,59 @@
+name: Breakout-6 NASDAQ backtest
+
+on:
+  push:
+    branches:
+      - research/breakout-6
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out frozen research branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install research dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install numpy pandas requests yfinance
+
+      - name: Verify, assemble, and run Breakout-6
+        run: bash assemble_and_run.sh
+
+      - name: Upload complete research artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: breakout6-results
+          path: |
+            breakout6.py
+            results/**
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Publish reproducible results to branch
+        if: success()
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add breakout6.py results
+          if git diff --cached --quiet; then
+            echo 'No result changes to commit.'
+          else
+            git commit -m 'Add Breakout-6 backtest results [skip ci]'
+            git push || echo 'Result push was not permitted; uploaded artifact remains available.'
+          fi
